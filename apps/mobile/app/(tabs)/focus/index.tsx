@@ -5,50 +5,70 @@ import { Icon } from '@tilo/ui/components/icon';
 import { SegmentedControl, SegmentedControlItem } from '@tilo/ui/components/segmented-control';
 import { Text } from '@tilo/ui/components/text';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { CircleCheck, Droplet, Pause, Play, RotateCcw } from 'lucide-react-native';
+import { CircleCheck, Pause, Play, RotateCcw } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 
+import { pauseMusic, playMusic, reportPlaybackError, stopMusic } from '@/audio/playback';
+import { SoundPicker } from '@/components/SoundPicker';
 import { TimerRing } from '@/components/TimerRing';
+import { useCountdown } from '@/hooks/useCountdown';
+import { useAppStore } from '@/store/useAppStore';
 
 // "Custom" uses the Stitch prototype's 45-minute value until a duration picker exists.
 const DURATIONS = { '25': 25, '50': 50, custom: 45 } as const;
 type DurationKey = keyof typeof DURATIONS;
 
+const STATUS_LABEL = { idle: 'Ready', running: 'Running', paused: 'Paused', completed: 'Done' };
+
+const startMusic = (soundId: string | null) => {
+  if (soundId) playMusic('focus', soundId).catch(reportPlaybackError('Starting focus music'));
+};
+const endMusic = () => stopMusic('focus').catch(reportPlaybackError('Stopping focus music'));
+
 export default function FocusScreen() {
   const router = useRouter();
   const { task } = useLocalSearchParams<{ task?: string }>();
   const [durationKey, setDurationKey] = useState<DurationKey>('25');
-  const total = DURATIONS[durationKey] * 60;
-  const [remaining, setRemaining] = useState(total);
-  const [isStarted, setIsStarted] = useState(false);
-  // The countdown stops on its own at zero; `isStarted` only records the user's intent.
-  const isRunning = isStarted && remaining > 0;
+  const soundId = useAppStore((state) => state.focusSoundAssetId);
+  const setSoundId = useAppStore((state) => state.setFocusSoundAssetId);
+  const timer = useCountdown({
+    initialDurationMs: DURATIONS[durationKey] * 60_000,
+    onComplete: endMusic,
+  });
+  const isRunning = timer.status === 'running';
 
-  useEffect(() => {
-    if (!isRunning) return;
-    const id = setInterval(() => setRemaining((seconds) => Math.max(0, seconds - 1)), 1000);
-    return () => clearInterval(id);
-  }, [isRunning]);
+  // Music must not outlive the screen that started it.
+  useEffect(() => () => void endMusic(), []);
 
   const selectDuration = (key: string) => {
     setDurationKey(key as DurationKey);
-    setRemaining(DURATIONS[key as DurationKey] * 60);
-    setIsStarted(false);
+    timer.reset(DURATIONS[key as DurationKey] * 60_000);
+    endMusic();
   };
 
   const reset = () => {
-    setRemaining(total);
-    setIsStarted(false);
+    timer.reset();
+    endMusic();
   };
 
-  const status = isRunning
-    ? 'Running'
-    : remaining === total
-      ? 'Ready'
-      : remaining
-        ? 'Paused'
-        : 'Done';
+  const toggle = () => {
+    if (timer.status === 'completed') return reset();
+    if (isRunning) {
+      timer.pause();
+      pauseMusic('focus');
+    } else {
+      timer.start();
+      startMusic(soundId);
+    }
+  };
+
+  const selectSound = (id: string | null) => {
+    setSoundId(id);
+    if (!isRunning) return;
+    if (id) startMusic(id);
+    else endMusic();
+  };
 
   return (
     <ScrollView
@@ -64,14 +84,14 @@ export default function FocusScreen() {
           </Text>
         </View>
         <Badge variant="secondary" className="px-space-sm">
-          <BadgeText>{status}</BadgeText>
+          <BadgeText>{STATUS_LABEL[timer.status]}</BadgeText>
         </Badge>
       </View>
 
       <View className="my-space-md items-center py-space-sm">
         <TimerRing
-          remaining={remaining}
-          progress={total ? remaining / total : 0}
+          remaining={Math.ceil(timer.remainingMs / 1000)}
+          progress={timer.remainingMs / timer.durationMs}
           caption="Interval"
         />
         <SegmentedControl
@@ -86,11 +106,19 @@ export default function FocusScreen() {
       </View>
 
       <View className="mb-space-lg flex-row gap-space-sm">
-        <Button className="flex-1" onPress={() => (remaining ? setIsStarted(!isRunning) : reset())}>
+        <Button className="flex-1" onPress={toggle}>
           <ButtonIcon as={isRunning ? Pause : Play} />
-          <ButtonText>{isRunning ? 'Pause' : remaining ? 'Start Focus' : 'Restart'}</ButtonText>
+          <ButtonText>
+            {isRunning
+              ? 'Pause'
+              : timer.status === 'paused'
+                ? 'Resume'
+                : timer.status === 'completed'
+                  ? 'Restart'
+                  : 'Start Focus'}
+          </ButtonText>
         </Button>
-        {remaining !== total ? (
+        {timer.status !== 'idle' ? (
           <Button
             variant="secondary"
             size="icon-lg"
@@ -120,19 +148,7 @@ export default function FocusScreen() {
           </Button>
         </Card>
 
-        <Card className="flex-row items-center gap-space-sm">
-          <View className="h-9 w-9 items-center justify-center rounded-full bg-secondary">
-            <Icon as={Droplet} size="md" />
-          </View>
-          <View className="min-w-0 flex-1">
-            <Text variant="label-sm" className="uppercase text-muted-foreground">
-              Soundscape
-            </Text>
-            <Text variant="body-md" className="font-geist-medium" numberOfLines={1}>
-              Rain & White Noise
-            </Text>
-          </View>
-        </Card>
+        <SoundPicker value={soundId} onChange={selectSound} />
       </View>
     </ScrollView>
   );

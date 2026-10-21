@@ -10,6 +10,7 @@
     "@tilo/types": "workspace:*",
     "@tilo/ui": "workspace:*",
     "expo": "~58.0.16",
+    "expo-audio": "~58.0.10",
     "expo-constants": "~58.0.12",
     "expo-font": "~58.0.9",
     "expo-linking": "~58.0.13",

@@ -1,8 +1,6 @@
 import { NativeTabs } from 'expo-router/native-tabs';
 import { useCSSVariable } from 'uniwind';
 
-import { MiniPlayer } from '@/components/MiniPlayer';
-
 // Native tab bar (UITabBar / Material bottom navigation), tinted with Kanso tokens:
 // active items in primary, inactive in the muted silver, no badges.
 export default function TabsLayout() {
@@ -22,10 +20,6 @@ export default function TabsLayout() {
       }}
       backgroundColor={background}
     >
-      <NativeTabs.BottomAccessory>
-        <MiniPlayer />
-      </NativeTabs.BottomAccessory>
-
       <NativeTabs.Trigger name="(tasks)">
         <NativeTabs.Trigger.Label>Tasks</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon

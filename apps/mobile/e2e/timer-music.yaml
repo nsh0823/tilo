@@ -1,0 +1,22 @@
+# FOC-07, INT-08, INT-09, INT-10: pick bundled music and run both timers.
+appId: com.anonymous.tilo
+---
+- launchApp:
+    clearState: true
+- tapOn: 'Intervals'
+- tapOn: 'Background music.*'
+- tapOn: 'Calming Rain.*'
+- assertVisible: 'Calming Rain'
+- tapOn: 'Start Shower Timer.*'
+- assertVisible: 'Pause'
+- tapOn: 'Pause'
+- assertVisible: 'Resume'
+- tapOn: 'Stop timer'
+- assertVisible: 'Start Shower Timer.*'
+- tapOn: 'Focus'
+- tapOn: 'Background music.*'
+- tapOn: 'Rainy Night Jazz.*'
+- tapOn: 'Start Focus.*'
+- assertVisible: 'Running'
+- tapOn: 'Pause'
+- assertVisible: 'Paused'
