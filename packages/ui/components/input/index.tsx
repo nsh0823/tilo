@@ -7,6 +7,8 @@ import { withUniwind } from 'uniwind';
 import type { VariantProps } from '@gluestack-ui/utils/nativewind-utils';
 import { UIIcon } from '@gluestack-ui/core/icon/creator';
 
+import { typography } from '../text/styles';
+
 const SCOPE = 'INPUT';
 
 const StyledUIIcon = withUniwind(UIIcon);
@@ -18,8 +20,19 @@ const UIInput = createInput({
   Input: TextInput,
 });
 
+// Kanso inputs (docs/DESIGN.md): underline by default, hairline turning to primary on focus.
+// `filled` is the tonal field used inside sheets; `unstyled` sits inside custom containers.
 const inputStyle = tva({
-  base: 'min-h-9 w-full flex-row items-center rounded-md border border-border  dark:bg-input/30 bg-transparent shadow-xs transition-[color,box-shadow] overflow-hidden data-[focus=true]:outline-none data-[focus=true]:border-ring dark:data-[focus=true]:border-ring data-[focus=true]:web:ring-[3px] data-[focus=true]:web:ring-ring/50 data-[invalid=true]:border-destructive/40 dark:data-[invalid=true]:border-destructive/40 data-[invalid=true]:web:ring-destructive/20 dark:data-[invalid=true]:web:ring-destructive/40 data-[disabled=true]:pointer-events-none data-[disabled=true]:cursor-not-allowed data-[disabled=true]:opacity-50 px-3 gap-2',
+  base: 'w-full flex-row items-center gap-2 overflow-hidden data-[focus=true]:outline-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50',
+  variants: {
+    variant: {
+      underlined:
+        'min-h-11 border-b border-border data-[focus=true]:border-primary data-[invalid=true]:border-destructive',
+      filled:
+        'min-h-11 rounded-md bg-secondary px-4 data-[invalid=true]:border data-[invalid=true]:border-destructive',
+      unstyled: '',
+    },
+  },
 });
 
 const inputIconStyle = tva({
@@ -31,16 +44,23 @@ const inputSlotStyle = tva({
 });
 
 const inputFieldStyle = tva({
-  base: 'flex-1 text-foreground text-sm md:text-sm py-1 h-full placeholder:text-muted-foreground  web:outline-none ios:leading-[0px] web:cursor-text web:data-[disabled=true]:cursor-not-allowed',
+  base: `flex-1 h-full py-2 text-foreground placeholder:text-subtle web:outline-none web:cursor-text web:data-[disabled=true]:cursor-not-allowed ${typography['body-md']}`,
 });
 
 type IInputProps = React.ComponentProps<typeof UIInput> &
   VariantProps<typeof inputStyle> & { className?: string };
 const Input = React.forwardRef<React.ComponentRef<typeof UIInput>, IInputProps>(function Input(
-  { className, ...props },
+  { className, variant = 'underlined', ...props },
   ref,
 ) {
-  return <UIInput ref={ref} {...props} className={inputStyle({ class: className })} context={{}} />;
+  return (
+    <UIInput
+      ref={ref}
+      {...props}
+      className={inputStyle({ variant, class: className })}
+      context={{ variant }}
+    />
+  );
 });
 
 type IInputIconProps = React.ComponentProps<typeof UIInput.Icon> &
