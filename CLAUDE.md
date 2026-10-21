@@ -18,6 +18,7 @@ Expo (SDK 58) app in a Turborepo + pnpm monorepo.
 | `docs/DESIGN.md`    | Visual reference (tokens, type, components)                                                          | Before UI work. If it's missing, ask for it — don't invent styles              |
 | `docs/DECISIONS.md` | Decisions made + open questions, with reasons                                                        | Before changing architecture or anything listed there; log new decisions there |
 | `docs/CONTEXT.md`   | Current phase, in-progress work, next steps (auto-loaded above)                                      | Rewrite at the end of each session                                             |
+| `docs/SESSIONS.md`  | Append-only log per session: critical changes, tests, error handling, refactoring, security          | Update during every session (see "Session log"); read by `/report`             |
 
 ## Layout
 
@@ -104,6 +105,40 @@ Scope:
 - Fix what was asked. If the real cause is elsewhere, point it out and ask before expanding the change.
 - Reliability beats visuals: never trade timer/audio correctness for animation or polish.
 
+## Quality checklist (every change)
+
+Work through each area for every change. If an area doesn't apply, say so in the session log; never skip it silently.
+
+- **Testing**
+  - New or changed logic gets unit tests (Jest) in the same change: the happy path, edge cases (empty, zero, max, invalid input), and failure paths.
+  - A bug fix starts with a test that reproduces it.
+  - User-flow changes update the Maestro flow in `apps/mobile/e2e`.
+  - UI changes are run in the simulator (iOS, and Android when available), and the screens actually viewed are named. Lint, typecheck and Jest don't catch layout or routing bugs.
+  - Report test counts from the real command output (e.g. Jest's `Tests: N passed`), never estimated.
+- **Review**
+  - Before reporting, read the full diff (`git diff`, including untracked files) as a reviewer would, checking correctness, leftover debug code, dead code, and rule violations in this file.
+  - For substantial changes, offer `/code-review`; for anything touching storage, env, permissions, or network, offer `/security-review`.
+- **Fixing and finding errors**
+  - Find the root cause before changing code.
+  - After a fix, rerun the failing check and confirm it now passes.
+  - If a check can't be run, say "not verified".
+- **Error handling**
+  - Never swallow errors: no empty `catch`, and no `.catch(() => {})` without a comment saying why.
+  - Errors the user can act on get a visible, plain-language message; unexpected ones are logged with context.
+  - Async work handles rejection.
+  - Persisted or external data is validated before use; corrupt storage falls back to defaults instead of crashing.
+  - The root layout must keep an error boundary.
+- **Refactoring**
+  - Refactor only behavior that tests pin down. If there are no tests, add them first.
+  - Keep refactors in separate commits from behavior changes, and never mix them into a bug fix without saying so.
+- **Security**
+  - No secrets in code, logs, or `EXPO_PUBLIC_*`.
+  - Check `.gitignore` covers new local files.
+  - New deps: check they're maintained, and run `pnpm audit` after adding them.
+  - Validate input at boundaries.
+  - Request no permission without a feature that needs it.
+  - Flag anything that would send data off the device; the MVP is local-first.
+
 ## Definition of Done (DoD)
 
 A task is done only when:
@@ -117,5 +152,15 @@ A task is done only when:
 - A user flow changed → the matching Maestro flow is updated, and either run or flagged as not run.
 - New deps were added with the commands above.
 - A decision was made → logged in `docs/DECISIONS.md`.
+- The current session's entry in `docs/SESSIONS.md` is updated.
 
 The full MVP release gate is PRD §7. Screens looking right is not "done".
+
+## Session log (`docs/SESSIONS.md`)
+
+One entry per Claude Code session, newest at the bottom. Create the entry when the first task of the session is finished, and update it after every task after that, not only at the end, since a session can end without warning.
+
+- **Append-only.** Never rewrite a past session's entry. A correction goes in the current entry under "Corrections to earlier sessions".
+- **Evidence only.** Record what actually happened in this session: commands actually run, real results, commit hashes. Never write what was planned, assumed, or "should" pass.
+- **No empty fields.** Every field is filled. "None" or "Not done — <reason>" is a valid value; a blank or missing field is not.
+- **Keep the format.** Use the template at the top of `docs/SESSIONS.md` exactly; `/report` (`~/.claude/commands/report.md`) parses it.
