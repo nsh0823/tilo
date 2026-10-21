@@ -14,7 +14,7 @@ import { Input, InputField } from '@tilo/ui/components/input';
 import { Progress, ProgressFilledTrack } from '@tilo/ui/components/progress';
 import { Text } from '@tilo/ui/components/text';
 import { useRouter } from 'expo-router';
-import { ChevronDown, ChevronRight, Clock, Flag, NotebookText, Plus } from 'lucide-react-native';
+import { ChevronDown, Clock, Flag, NotebookText, Plus } from 'lucide-react-native';
 import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 
@@ -157,7 +157,7 @@ export default function TasksScreen() {
             <AccordionItem value="completed">
               <AccordionHeader>
                 <AccordionTrigger>
-                  {({ isExpanded }: { isExpanded: boolean }) => (
+                  {() => (
                     <>
                       <View className="flex-row items-center gap-space-xs">
                         <Text variant="label-md" className="uppercase text-muted-foreground">
@@ -169,7 +169,7 @@ export default function TasksScreen() {
                           </BadgeText>
                         </Badge>
                       </View>
-                      <AccordionIcon as={isExpanded ? ChevronDown : ChevronRight} />
+                      <AccordionIcon as={ChevronDown} />
                     </>
                   )}
                 </AccordionTrigger>

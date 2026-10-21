@@ -26,7 +26,7 @@ export default function TabsLayout() {
         <MiniPlayer />
       </NativeTabs.BottomAccessory>
 
-      <NativeTabs.Trigger name="index">
+      <NativeTabs.Trigger name="(tasks)">
         <NativeTabs.Trigger.Label>Tasks</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           sf={{ default: 'checkmark.circle', selected: 'checkmark.circle.fill' }}

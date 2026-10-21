@@ -19,9 +19,8 @@ PRD §8 step 1: confirm the technical approach and platform constraints (backgro
 
 ## Next
 
-1. Decide the Supabase/auth question in `docs/DECISIONS.md`.
-2. Research and choose audio libraries; spike background cues on physical devices (PRD §9.1–9.4).
-3. Build and unit-test the timer engine (PRD §8 step 2).
+1. Research and choose audio libraries; spike background cues on physical devices (PRD §9.1–9.4).
+2. Build and unit-test the timer engine (PRD §8 step 2).
 
 ## Blockers / open questions
 

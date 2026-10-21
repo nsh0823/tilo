@@ -1,0 +1,9 @@
+appId: com.anonymous.tilo
+---
+- launchApp:
+    clearState: true
+- assertVisible: "Today's Focus"
+- tapOn: 'Focus'
+- assertVisible: 'Start Focus'
+- tapOn: 'Intervals'
+- assertVisible: 'Interval Timer'

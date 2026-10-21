@@ -187,16 +187,13 @@ export default function IntervalsScreen() {
           <AccordionItem value="preferences">
             <AccordionHeader>
               <AccordionTrigger className="p-space-md">
-                {({ isExpanded }: { isExpanded: boolean }) => (
+                {() => (
                   <>
                     <View className="flex-row items-center gap-2">
                       <Icon as={SlidersHorizontal} size="md" className="text-muted-foreground" />
                       <AccordionTitleText>More Preferences</AccordionTitleText>
                     </View>
-                    <AccordionIcon
-                      as={ChevronDown}
-                      className={isExpanded ? 'rotate-180' : undefined}
-                    />
+                    <AccordionIcon as={ChevronDown} />
                   </>
                 )}
               </AccordionTrigger>

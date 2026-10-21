@@ -17,13 +17,13 @@ Open questions live at the bottom until they're decided. Then move them up as a 
 
 - **Why:** PRD §3.4 MVP default. The schedule resumes from the resumed timer state, and foregrounding never replays a cue that already fired.
 
+### 2026-10-22 — No sign-in for the MVP; Supabase stays dormant
+
+- **Decision:** Option (a). Removed the `(auth)` routes, `Stack.Protected` gating, the profile screen and the header avatar; the app opens straight into the tabs. The Supabase client (`src/services/supabase.ts`), `LargeSecureStore` and `packages/api` stay in the repo but nothing in the app imports them.
+- **Why:** PRD §1.4, §2.10 and §6: the MVP is local-first and needs no account or backend. Keeping the client avoids redoing the setup for post-MVP sync.
+- **Consequence:** No MVP feature is built on Supabase; tasks and preferences persist locally. The light/dark toggle lived on the profile screen, so the app follows the system appearance until in-context settings exist (PRD NAV-05).
+
 ## Open
-
-### Supabase/auth scaffold vs. local-first MVP
-
-The repo ships with Supabase, an `(auth)` route group gated by `Stack.Protected`, and `LargeSecureStore` sessions. The PRD (§1.4, §2.10, §6) says the MVP needs no account and no backend.
-Options: (a) remove auth gating for MVP and leave the Supabase packages dormant for post-MVP sync; (b) remove Supabase entirely for now; (c) keep auth (conflicts with the PRD).
-**Until decided:** don't build any MVP feature on Supabase, and don't remove the scaffold without asking.
 
 ### PRD §9 items
 

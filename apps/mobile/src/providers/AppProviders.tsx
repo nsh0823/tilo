@@ -6,7 +6,6 @@ import { SafeAreaListener, SafeAreaProvider } from 'react-native-safe-area-conte
 import { Uniwind } from 'uniwind';
 
 import { useAppStore } from '@/store/useAppStore';
-import { AuthProvider } from './AuthProvider';
 import { queryClient } from './query-client';
 
 export function AppProviders({ children }: PropsWithChildren) {
@@ -17,9 +16,7 @@ export function AppProviders({ children }: PropsWithChildren) {
       <SafeAreaProvider>
         <SafeAreaListener onChange={({ insets }) => Uniwind.updateInsets(insets)}>
           <GluestackUIProvider mode={colorMode}>
-            <QueryClientProvider client={queryClient}>
-              <AuthProvider>{children}</AuthProvider>
-            </QueryClientProvider>
+            <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
           </GluestackUIProvider>
         </SafeAreaListener>
       </SafeAreaProvider>

@@ -11,24 +11,16 @@ import {
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 
-import { useSession } from '@/hooks/useAuth';
 import { useNativeHeaderOptions } from '@/navigation/useNativeHeaderOptions';
 import { AppProviders } from '@/providers/AppProviders';
 
+// The MVP is local-first with no account (docs/DECISIONS.md), so the app opens straight into the tabs.
 function RootNavigator() {
-  const { session, isLoading } = useSession();
   const headerOptions = useNativeHeaderOptions();
-  if (isLoading) return null;
 
   return (
     <Stack screenOptions={{ ...headerOptions, headerShown: false }}>
-      <Stack.Protected guard={!!session}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="profile" options={{ headerShown: true, title: 'Profile' }} />
-      </Stack.Protected>
-      <Stack.Protected guard={!session}>
-        <Stack.Screen name="(auth)" />
-      </Stack.Protected>
+      <Stack.Screen name="(tabs)" />
     </Stack>
   );
 }
