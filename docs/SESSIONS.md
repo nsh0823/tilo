@@ -178,3 +178,65 @@ _Backfilled in session 2026-10-22-2 from the conversation transcript and git his
 ### Corrections to earlier sessions
 
 - None
+
+## Session 2026-10-22-3 — Bundled music, beep cues, working timers, mini-player removal
+
+- **Date:** 2026-10-22
+- **Branch:** feat/kanso-design-system
+- **Commits:** 005d3a9 Wire bundled music and beep cues into Focus and Intervals timers; plus the docs commit that adds this update. Not committed: the user's `apps/mobile/assets/sounds/` (now gitignored, because the repo is public and the licenses are unconfirmed) and an untracked root `app.json` (the user chose to leave it out).
+- **Requirement IDs:** FOC-02, FOC-03, FOC-04, FOC-05, FOC-07, FOC-08, INT-04, INT-07, INT-08, INT-09, INT-10, INT-13, INT-15, AUD-01, AUD-03, AUD-05, AUD-06, AUD-07 (partial: licenses unconfirmed). AUD-04 is now unmet (mini-player removed at the user's request).
+
+### Critical changes
+
+- Added `expo-audio` ~58.0.10 via `pnpm --filter mobile exec expo install expo-audio`. The plugin is configured with `microphonePermission: false`, `recordAudioAndroid: false` and `enableBackgroundPlayback: true`.
+- New pure timer engine `src/timer/timerEngine.ts` (deadline-based) and cue scheduler `src/timer/cueSchedule.ts` (elapsed-time cues, cursor-based, late cues dropped after 2 s).
+- New `src/hooks/useCountdown.ts`: React binding; a 250 ms interval only drives re-renders, and `AppState` 'active' triggers a catch-up.
+- New `src/audio/soundCatalog.ts` (7 focus tracks plus the beep, as `SoundAsset`) and `src/audio/playback.ts`: one shared looping music player owned by `focus` or `interval`, plus one cue player.
+- Focus: the tick-counting countdown was replaced with the engine. Music from the selected soundscape plays while running, pauses on pause, and stops on reset or completion.
+- Intervals: the Start button now runs a real timer, with a ring, Pause/Resume, Stop and a completed state. A beep plays at each interval, at the final-minute mark and at completion. The custom interval has a +/- stepper (1–30 min). Voice and Haptic cues and "Announce remaining time" are disabled with a "coming later" note. Settings are hidden while a session exists.
+- Both tabs: `SoundPicker` (card plus actionsheet) chooses a track or "No music". The selection persists per timer in `useAppStore` (`focusSoundAssetId`, `intervalSoundAssetId`), and rehydration is validated.
+- Removed the "Deep Solitude" `MiniPlayer` and the `NativeTabs.BottomAccessory`.
+- `.gitignore`: added `apps/mobile/assets/sounds/`. The repo `nsh0823/tilo` is public and the sound licenses are unconfirmed, so the user chose to keep the files local.
+- Fixed the More Preferences chevron sitting outside the card: the title row now has `min-w-0 flex-1`.
+
+### Tests
+
+- **Unit (Jest):** 50 passed / 0 failed / 0 skipped across 7 suites — from `npx jest` in `apps/mobile`
+- **Unit tests added/changed/removed:** `timerEngine.test.ts` (start, pause, resume, complete-once, cancel, no negatives, invalid durations, clock going backwards); `cueSchedule.test.ts` (schedule building, final-minute merge, no duplicate cues, pause continuity, stale-cue drop, edge inputs); `useCountdown.test.tsx` (start/pause/resume/complete/cancel, foreground catch-up after suspension); `playback.test.ts` (looping, single shared player, owner isolation, play/pause race, unknown id, audio-mode failure, beep replay); `soundCatalog.test.ts` (unique ids, license notes, loopable); `useAppStore.test.ts` extended (sound selection, restart rehydration, corrupt data falls back to defaults).
+- **E2E (Maestro):** The repo flow was not run, because it targets `com.anonymous.tilo` and needs a dev build. An ad-hoc flow equivalent to it was run against Expo Go: all steps COMPLETED.
+- **E2E flows added/changed/removed:** Added `apps/mobile/e2e/timer-music.yaml` (pick music, start/pause/stop interval timer, start/pause focus).
+- **Manual / simulator:** iPhone 17 Pro simulator, iOS 26.5, Expo Go. Viewed: Tasks (no mini-player), Intervals setup (preferences expanded, chevron inside the card), Custom interval stepper, soundscape sheet, interval timer running at 09:58 with Calming Rain, Focus running with Rainy Night Jazz. No `[audio]` warnings in the Metro log. Audio was not listened to. Android not run.
+- **Static checks:** lint pass (0 errors, 1 pre-existing warning in `useAppStore.test.ts` line 7); typecheck pass; format: prettier run on changed files.
+
+### Error handling
+
+- Playback failures are logged via `reportPlaybackError` and never break the timer. If the audio mode fails, a warning is logged and the mode is retried on the next play. An unknown sound id is logged and skipped. Persisted store data is validated, and unknown or corrupt values fall back to defaults.
+- Gap: there's no user-visible message when audio fails to play.
+
+### Refactoring
+
+- None. The Focus countdown was rewritten as a behavior change; it had no tests before.
+
+### Security
+
+- Kept the microphone permission off on both platforms (the expo-audio plugin's default would have added it).
+- `pnpm audit`: 4 findings (2 high: node-forge via `expo>@expo/cli`, braces via jest tooling; 2 moderate: uuid via `@expo/config-plugins`, sprintf-js via jest tooling). None come through `expo-audio`, and none were fixed.
+- No data leaves the device. No new local files need `.gitignore`.
+
+### Bugs found and fixed
+
+- More Preferences chevron rendered outside the card. Root cause: the title row lacked `flex-1`, so `AccordionTitleText`'s `flex-1` pushed the icon out. Verified in the simulator screenshot.
+
+### Not verified / open
+
+- The user reported no sound in the simulator. Temporary logging of `player.currentStatus` (removed before commit) showed the Focus track loaded (`readyToPlay`, duration 179.5 s), `playing: true`, `currentTime` going from 1.05 s to 3.55 s, volume 1 and not muted. The Mac's default output was the built-in speakers at volume 38, not muted. So the app is playing; why it's not audible in the simulator was not resolved before the user switched tasks. The log also showed a second `playMusic` call during that run that wasn't explained (Maestro's "Focus" tap appears to have landed on the Intervals tab), and it wasn't investigated.
+- Fresh clones and CI don't have the gitignored sound files, so the `require()` calls in `soundCatalog.ts` (and `soundCatalog.test.ts` / `playback.test.ts`) will fail there until the files are provided.
+- No audio was heard: music looping, beep cues and completion beep were not listened to. Background, lock-screen and mixing behavior were not verified on device (no physical iOS or Android test).
+- Sound licenses: the filenames look like Pixabay downloads, but the source pages and licenses are unconfirmed. Each `licenseNote` says so. The assets add about 40 MB to the app.
+- Timer sessions are not persisted. After an app restart, a running timer comes back idle, not stale. The PRD's restore-after-restart and FOC-09 session history are not done.
+- AUD-04 (mini-player) is unmet after the removal. INT-11 (separate volumes), the INT-05 announcement mode, the completion-sound toggle (always on) and INT-14 (persist duration/cue preferences) are not done.
+- An untracked root `/app.json` with an EAS `projectId` appeared at 04:10. It wasn't created by this session's commands and was left untouched.
+
+### Corrections to earlier sessions
+
+- None

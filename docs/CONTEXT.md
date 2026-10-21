@@ -6,22 +6,29 @@ _Rewrite this whole file at the end of each session. Keep it under ~30 lines._
 
 ## Phase
 
-PRD §8 step 1: confirm the technical approach and platform constraints (background audio and timed cues on iOS/Android).
+PRD §8 step 1–2: technical approach confirmed for playback (`expo-audio`); timer engine built and unit-tested.
 
 ## State
 
-- Repo scaffold exists (Expo, Turborepo, gluestack/Uniwind, Supabase, Jest, Maestro). Not verified which screens or features are built beyond the scaffold.
-- PRD added at `docs/PRD.md`. `docs/DESIGN.md` is not in the repo yet.
+- Focus and Intervals timers run on the deadline-based engine (`src/timer`), with bundled music (looped) and beep cues (`src/audio`).
+- Music is picked per timer via `SoundPicker`; the selection persists. Mini-player removed (AUD-04 now unmet).
+- Session 2026-10-22-3 work is committed (005d3a9) and pushed. Sound files are gitignored (public repo, unconfirmed licenses), so clones and CI lack them.
 
 ## In progress
 
-- (none recorded)
+- (none)
 
 ## Next
 
-1. Research and choose audio libraries; spike background cues on physical devices (PRD §9.1–9.4).
-2. Build and unit-test the timer engine (PRD §8 step 2).
+1. Test audio on physical iOS and Android devices: looping, beeps, background/lock screen, mixing.
+2. Confirm the license for each bundled sound (Pixabay presumed) and update each `licenseNote`.
+3. Persist `TimerSession` so a running timer survives a restart; persist interval preferences (INT-14).
+4. Voice cues (TTS) when the voice assets/approach are ready.
 
 ## Blockers / open questions
 
-- `docs/DESIGN.md` is needed before UI work.
+- No audible sound in the iOS simulator, though the player reports it is playing; not yet diagnosed.
+
+- AUD-04: bring the mini-player back, or change the PRD?
+- Audio mixing policy (DECISIONS open item 4); current mode is provisional.
+- Untracked root `app.json` with an EAS projectId: origin unknown.
