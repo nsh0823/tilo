@@ -98,7 +98,7 @@ Never:
 
 - Change the tab order (Tasks → Intervals → Focus) or add a fourth tab.
 - Claim background audio/cues, lock-screen behavior, or audio mixing works until it has been verified on a physical iOS **and** Android device. Simulator results don't count.
-- Run `eas build` or link Maestro Cloud (for now).
+- Link Maestro Cloud (for now).
 
 Scope:
 

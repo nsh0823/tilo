@@ -9,7 +9,10 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.tilo"
+      "bundleIdentifier": "com.anonymous.tilo",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.anonymous.tilo",
@@ -19,7 +22,12 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -40,6 +48,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "owner": "nsh0823s-organization",
+    "extra": {
+      "eas": {
+        "projectId": "d4071a35-6a3c-40bc-83d3-cc0993a33b8a"
+      }
     }
   }
 }

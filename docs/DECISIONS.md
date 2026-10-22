@@ -39,6 +39,12 @@ Open questions live at the bottom until they're decided. Then move them up as a 
 - **Decision:** At the user's request, the placeholder "Deep Solitude" mini-player (the native tab bar's bottom accessory) was removed from all tabs.
 - **Consequence:** PRD AUD-04 (a mini-player above the tab bar while audio plays) and Flow E are not met now. Music is controlled from the timer screen that started it. Whether to bring AUD-04 back, or to change the PRD, needs a decision.
 
+### 2026-10-22 — EAS Build allowed for installable test builds
+
+- **Decision:** At the user's request, `eas build` was removed from CLAUDE.md's "Never" list so the app can be installed on physical devices. Builds go to the EAS project `@nsh0823s-organization/tilo` (`d4071a35-…`), now linked in `apps/mobile/app.json`. The `preview` profile builds an Android APK (`buildType: "apk"`) and an iOS ad-hoc IPA (internal distribution).
+- **Why:** The next step is testing audio on physical iOS and Android devices, and that needs real binaries.
+- **Consequence:** The gitignored bundled sounds have to be in the build, so a root `.easignore` (a copy of `.gitignore` without the sounds rule) replaces `.gitignore` for EAS uploads. Those sound files, whose licenses are still unconfirmed, are uploaded to Expo's build servers. `.easignore` must be kept in sync with `.gitignore`.
+
 ## Open
 
 ### PRD §9 items
