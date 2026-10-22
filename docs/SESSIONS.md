@@ -245,7 +245,7 @@ _Backfilled in session 2026-10-22-2 from the conversation transcript and git his
 
 - **Date:** 2026-10-22
 - **Branch:** feat/kanso-design-system
-- **Commits:** None — uncommitted: `CLAUDE.md`, `apps/mobile/app.json`, `apps/mobile/eas.json`, `docs/DECISIONS.md`, `docs/SESSIONS.md`, new `.easignore`
+- **Commits:** 24fa89a Enable EAS preview builds (Android APK, iOS IPA); plus the follow-up session-log commit. Both pushed to origin/feat/kanso-design-system. The untracked root `app.json` was left out (its projectId is now in `apps/mobile/app.json`).
 - **Requirement IDs:** None (build tooling; it enables the physical-device audio tests in PRD §7)
 
 ### Critical changes
@@ -255,16 +255,17 @@ _Backfilled in session 2026-10-22-2 from the conversation transcript and git his
 - `apps/mobile/eas.json`: `preview` profile now has `android.buildType: "apk"`.
 - New root `.easignore`: a copy of `.gitignore` without the `apps/mobile/assets/sounds/` rule, so EAS uploads include the sounds. eas-cli 21.0.0 reads `.easignore` only from the git root, and ignores `.gitignore` when it exists (checked in `build/vcs/local.js` and `build/vcs/clients/git.js`).
 - Android preview build `1d4deaf8-ded4-4791-8fb6-6a6e7cf76f9c` FINISHED. APK: https://expo.dev/artifacts/eas/WKpWvbTFy4NdrD6omTa2F2EV4-qO_m1S_GhaPBYDul4.apk. EAS generated and stores the Android keystore, and versionCode was initialized to 1 (remote).
+- Also committed: changes made outside this session's tool calls (by the user or tooling) — `apps/mobile/app.json` got `ios.infoPlist.ITSAppUsesNonExemptEncryption: false` and Android permissions `MODIFY_AUDIO_SETTINGS`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_MEDIA_PLAYBACK` (for background playback); `apps/mobile/package.json` `ios`/`android` scripts now run `expo run:ios` / `expo run:android`.
 - The iOS preview build was not queued. `eas build --platform ios --profile preview --non-interactive` failed: "EAS CLI couldn't find any credentials suitable for internal distribution." The user has to run it interactively, with an Apple Developer login and device registration. buildNumber was initialized to 1 (remote).
 
 ### Tests
 
-- **Unit (Jest):** Not run — no app code changed
+- **Unit (Jest):** 50 passed / 0 failed / 0 skipped across 7 suites — from `pnpm test` (run before commit)
 - **Unit tests added/changed/removed:** None
 - **E2E (Maestro):** Not run
 - **E2E flows added/changed/removed:** None
 - **Manual / simulator:** Not run. The APK has not been installed or opened on any device.
-- **Static checks:** lint not run, typecheck not run; format: `prettier --check` passed on `app.json` and `eas.json`
+- **Static checks:** lint pass (`pnpm lint`: 0 errors, 3 pre-existing warnings); typecheck pass (`pnpm typecheck`); format: prettier via lint-staged on commit
 
 ### Error handling
 
@@ -278,7 +279,7 @@ _Backfilled in session 2026-10-22-2 from the conversation transcript and git his
 
 - The Android upload ran by mistake with `EAS_NO_VCS=0` set (eas-cli treats any value as "on"). In that mode the upload root is still the git root, and the root `.easignore` applies, which excludes `.env*.local` and `.git`. So `apps/mobile/.env.local` was not uploaded (from reading `build/vcs/clients/noVcs.js` and `build/vcs/local.js`; the uploaded archive itself was not inspected). The untracked root `app.json` (only a projectId) was uploaded.
 - The bundled sound files, whose licenses are unconfirmed, were uploaded to Expo's build servers (38.5 MB archive).
-- The Android signing keystore was created on and is held by EAS servers. No secrets were added to the repo. No new deps.
+- The Android signing keystore was created on and is held by EAS servers. No secrets were added to the repo. No new deps. Three Android permissions were added (see Critical changes); all serve background media playback.
 
 ### Bugs found and fixed
 
@@ -287,9 +288,9 @@ _Backfilled in session 2026-10-22-2 from the conversation transcript and git his
 ### Not verified / open
 
 - The APK has not been installed or run. Background audio, lock-screen behavior and mixing are not verified on device.
-- iOS IPA not built (needs the user's interactive Apple login). The bundle ID is still the template's `com.anonymous.tilo`, and Apple may reject it as taken. `ios.infoPlist.ITSAppUsesNonExemptEncryption` is missing (EAS warning; only matters for TestFlight or the App Store).
+- iOS IPA not built (needs the user's interactive Apple login). The bundle ID is still the template's `com.anonymous.tilo`, and Apple may reject it as taken.
 - `.easignore` has to be kept in sync with `.gitignore` by hand.
-- `pnpm lint`, `pnpm typecheck` and `pnpm test` were not run this session.
+- The new Android foreground-service permissions are not verified on device (the APK above was built before they were added).
 
 ### Corrections to earlier sessions
 
